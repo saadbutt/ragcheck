@@ -1,0 +1,98 @@
+[
+  {
+    "id": "q1",
+    "question": "How much does the Growth plan cost per month?",
+    "relevant_docs": ["billing"],
+    "answer_contains": ["199 USD per month"]
+  },
+  {
+    "id": "q2",
+    "question": "What happens to my allowance if I downgrade my plan?",
+    "relevant_docs": ["billing"],
+    "answer_contains": ["downgrade takes effect at the start of the next billing period"]
+  },
+  {
+    "id": "q3",
+    "question": "How long is data kept after an account goes read only?",
+    "relevant_docs": ["billing"],
+    "answer_contains": ["retained for 90"]
+  },
+  {
+    "id": "q4",
+    "question": "What is the rate limit for a Growth account?",
+    "relevant_docs": ["api"],
+    "answer_contains": ["60 requests per second"]
+  },
+  {
+    "id": "q5",
+    "question": "How long do pagination cursors stay valid?",
+    "relevant_docs": ["api"],
+    "answer_contains": ["expire after 30 minutes"]
+  },
+  {
+    "id": "q6",
+    "question": "How are webhook payloads signed?",
+    "relevant_docs": ["api"],
+    "answer_contains": ["HMAC SHA-256"]
+  },
+  {
+    "id": "q7",
+    "question": "Can an admin delete the workspace?",
+    "relevant_docs": ["security"],
+    "answer_contains": ["cannot delete the workspace"]
+  },
+  {
+    "id": "q8",
+    "question": "Can I move a workspace to a different region later?",
+    "relevant_docs": ["security"],
+    "answer_contains": ["cannot be changed"]
+  },
+  {
+    "id": "q9",
+    "question": "How long are audit log entries kept?",
+    "relevant_docs": ["security"],
+    "answer_contains": ["retained for 2 years"]
+  },
+  {
+    "id": "q10",
+    "question": "Do pending invitations use up a seat?",
+    "relevant_docs": ["onboarding"],
+    "answer_contains": ["do not consume a seat"]
+  },
+  {
+    "id": "q11",
+    "question": "When is sandbox data deleted?",
+    "relevant_docs": ["onboarding"],
+    "answer_contains": ["wiped every Sunday"]
+  },
+  {
+    "id": "q12",
+    "question": "What credit do I get if uptime drops to 98 percent?",
+    "relevant_docs": ["sla"],
+    "answer_contains": ["10 percent of the monthly fee"]
+  },
+  {
+    "id": "q13",
+    "question": "How long do I have to claim a service credit?",
+    "relevant_docs": ["sla"],
+    "answer_contains": ["within 30 days"]
+  },
+  {
+    "id": "q14",
+    "question": "Why am I getting duplicate records when I retry?",
+    "relevant_docs": ["troubleshooting"],
+    "answer_contains": ["Idempotency-Key header was missing"]
+  },
+  {
+    "id": "q15",
+    "question": "My webhook never arrived, where do I look first?",
+    "relevant_docs": ["troubleshooting"],
+    "answer_contains": ["delivery log"]
+  },
+  {
+    "id": "q16",
+    "question": "Why is my token rejected with a 401?",
+    "relevant_docs": ["troubleshooting"],
+    "answer_contains": ["not portable across regions"]
+  }
+]
