@@ -1,0 +1,35 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: no dependencies to install
+        run: python -c "import sys; print(sys.version)"
+      - name: tests
+        run: python -m unittest discover -s tests -t . -v
+
+  retrieval-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: compare every chunking strategy
+        run: python -m ragcheck.cli compare corpus
+      - name: gate the build on retrieval quality
+        run: python -m ragcheck.cli eval corpus --strategy sentence --min-hit-rate 0.8
