@@ -169,3 +169,4 @@ quality can gate a build the same way tests do.
 ## License
 
 MIT.
+# ragcheck
