@@ -81,8 +81,11 @@ class HashingEmbedder:
 class OpenAIEmbedder:
     """Any OpenAI-compatible embeddings endpoint. Standard library only.
 
-    Not exercised by the test suite, on purpose. If you point the harness at
-    this and your numbers move, that is the harness doing its job.
+    The wire format -- request shape, batching, sorting the response by
+    index rather than trusting server order -- is tested against a local
+    fake server in tests/test_embed_store.py. The embeddings themselves are
+    not: if you point the harness at a real model and your retrieval numbers
+    move, that is the harness doing its job, not a test failing.
     """
 
     def __init__(
