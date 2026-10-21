@@ -7,7 +7,12 @@ import tempfile
 import unittest
 
 from ragcheck.ingest import (
-    Document, IngestError, html_to_text, load_corpus, normalise, read_document,
+    Document,
+    IngestError,
+    html_to_text,
+    load_corpus,
+    normalise,
+    read_document,
 )
 from tests.support import CORPUS, docs
 
@@ -61,9 +66,9 @@ class TestLoadCorpus(unittest.TestCase):
             load_corpus(CORPUS / "nope")
 
     def test_empty_directory_is_an_error(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            with self.assertRaisesRegex(IngestError, "no supported documents"):
-                load_corpus(tmp)
+        with tempfile.TemporaryDirectory() as tmp, \
+                self.assertRaisesRegex(IngestError, "no supported documents"):
+            load_corpus(tmp)
 
     def test_unsupported_type_is_named_not_skipped(self):
         with tempfile.TemporaryDirectory() as tmp:

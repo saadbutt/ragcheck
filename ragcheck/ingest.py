@@ -13,7 +13,6 @@ import html.parser
 import pathlib
 import re
 from dataclasses import dataclass, field
-from typing import Dict, List
 
 TEXT_SUFFIXES = {".txt", ".md", ".markdown"}
 HTML_SUFFIXES = {".html", ".htm"}
@@ -30,7 +29,7 @@ class Document:
     id: str
     text: str
     path: str = ""
-    meta: Dict[str, str] = field(default_factory=dict)
+    meta: dict[str, str] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         if not self.id:
@@ -40,11 +39,11 @@ class Document:
 class _Strip(html.parser.HTMLParser):
     """Visible text only. Script and style content is dropped, not indexed."""
 
-    SKIP = {"script", "style", "noscript", "head"}
+    SKIP = frozenset({"script", "style", "noscript", "head"})
 
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
-        self.parts: List[str] = []
+        self.parts: list[str] = []
         self._skip_depth = 0
 
     def handle_starttag(self, tag, attrs):
@@ -103,7 +102,7 @@ def _read_pdf(path: pathlib.Path) -> str:
     return "\n\n".join(page.extract_text() or "" for page in reader.pages)
 
 
-def load_corpus(directory) -> List[Document]:
+def load_corpus(directory) -> list[Document]:
     """Every supported file in `directory`, sorted by name so runs repeat."""
     root = pathlib.Path(directory)
     if not root.is_dir():

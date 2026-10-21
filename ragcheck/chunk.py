@@ -14,8 +14,8 @@ comparable against the others without touching evaluate.py.
 from __future__ import annotations
 
 import re
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable, Dict, List
 
 from .ingest import Document
 
@@ -45,16 +45,16 @@ class Chunk:
 
 _SENTENCE_END = re.compile(r"(?<=[.!?])\s+")
 _PARA_SPLIT = re.compile(r"\n\s*\n")
-_MD_HEADING = re.compile(r"^#{1,6}\s+.+$", re.M)
+_MD_HEADING = re.compile(r"^#{1,6}\s+.+$", re.MULTILINE)
 
 
-def _emit(doc: Document, spans: List[tuple]) -> List[Chunk]:
+def _emit(doc: Document, spans: list[tuple]) -> list[Chunk]:
     """Turn (start, end) pairs into Chunks, dropping empties.
 
     Offsets are preserved exactly. Nothing here re-slices or re-joins text,
     because that is how offsets quietly stop matching the source.
     """
-    chunks: List[Chunk] = []
+    chunks: list[Chunk] = []
     for start, end in spans:
         text = doc.text[start:end]
         if not text.strip():
@@ -75,7 +75,7 @@ def _emit(doc: Document, spans: List[tuple]) -> List[Chunk]:
     return chunks
 
 
-def fixed(doc: Document, size: int = 600, overlap: int = 0) -> List[Chunk]:
+def fixed(doc: Document, size: int = 600, overlap: int = 0) -> list[Chunk]:
     """Fixed character windows. The default everyone starts with, and the
     reason retrieval so often returns a sentence cut in half."""
     if size <= 0:
@@ -88,10 +88,10 @@ def fixed(doc: Document, size: int = 600, overlap: int = 0) -> List[Chunk]:
     return _emit(doc, spans)
 
 
-def paragraph(doc: Document, max_size: int = 1200) -> List[Chunk]:
+def paragraph(doc: Document, max_size: int = 1200) -> list[Chunk]:
     """Split on blank lines. Paragraphs longer than max_size are split again
     on sentences, so one runaway paragraph cannot swallow the document."""
-    spans: List[tuple] = []
+    spans: list[tuple] = []
     cursor = 0
     for part in _PARA_SPLIT.split(doc.text):
         start = doc.text.index(part, cursor) if part else cursor
@@ -104,14 +104,14 @@ def paragraph(doc: Document, max_size: int = 1200) -> List[Chunk]:
     return _emit(doc, spans)
 
 
-def sentence(doc: Document, max_size: int = 400) -> List[Chunk]:
+def sentence(doc: Document, max_size: int = 400) -> list[Chunk]:
     """Pack whole sentences up to max_size. Never cuts mid-sentence."""
     return _emit(doc, _sentence_spans(doc.text, 0, len(doc.text), max_size))
 
 
-def _sentence_spans(text: str, start: int, end: int, max_size: int) -> List[tuple]:
+def _sentence_spans(text: str, start: int, end: int, max_size: int) -> list[tuple]:
     body = text[start:end]
-    spans: List[tuple] = []
+    spans: list[tuple] = []
     cursor = start
     buf_start = start
     for piece in _SENTENCE_END.split(body):
@@ -128,7 +128,7 @@ def _sentence_spans(text: str, start: int, end: int, max_size: int) -> List[tupl
     return spans
 
 
-def heading(doc: Document, max_size: int = 2000) -> List[Chunk]:
+def heading(doc: Document, max_size: int = 2000) -> list[Chunk]:
     """Markdown heading sections. A section keeps its heading with its body,
     which is usually what makes a chunk answerable on its own."""
     positions = [m.start() for m in _MD_HEADING.finditer(doc.text)]
@@ -136,8 +136,8 @@ def heading(doc: Document, max_size: int = 2000) -> List[Chunk]:
         return paragraph(doc, max_size=max_size)
     if positions[0] != 0:
         positions.insert(0, 0)
-    bounds = positions + [len(doc.text)]
-    spans: List[tuple] = []
+    bounds = [*positions, len(doc.text)]
+    spans: list[tuple] = []
     for i in range(len(bounds) - 1):
         start, end = bounds[i], bounds[i + 1]
         if end - start <= max_size:
@@ -147,7 +147,7 @@ def heading(doc: Document, max_size: int = 2000) -> List[Chunk]:
     return _emit(doc, spans)
 
 
-STRATEGIES: Dict[str, Callable[..., List[Chunk]]] = {
+STRATEGIES: dict[str, Callable[..., list[Chunk]]] = {
     "fixed": fixed,
     "paragraph": paragraph,
     "sentence": sentence,
@@ -155,7 +155,7 @@ STRATEGIES: Dict[str, Callable[..., List[Chunk]]] = {
 }
 
 
-def chunk_document(doc: Document, strategy: str = "paragraph", **params) -> List[Chunk]:
+def chunk_document(doc: Document, strategy: str = "paragraph", **params) -> list[Chunk]:
     try:
         fn = STRATEGIES[strategy]
     except KeyError:
@@ -165,8 +165,8 @@ def chunk_document(doc: Document, strategy: str = "paragraph", **params) -> List
     return fn(doc, **params)
 
 
-def chunk_corpus(docs: List[Document], strategy: str = "paragraph", **params):
-    out: List[Chunk] = []
+def chunk_corpus(docs: list[Document], strategy: str = "paragraph", **params):
+    out: list[Chunk] = []
     for doc in docs:
         out.extend(chunk_document(doc, strategy, **params))
     return out

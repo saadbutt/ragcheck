@@ -22,8 +22,9 @@ from __future__ import annotations
 
 import json
 import pathlib
+from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import Any
 
 from .chunk import Chunk
 
@@ -36,8 +37,8 @@ class GoldsetError(ValueError):
 class Question:
     id: str
     text: str
-    relevant_docs: Tuple[str, ...]
-    answer_contains: Tuple[str, ...] = ()
+    relevant_docs: tuple[str, ...]
+    answer_contains: tuple[str, ...] = ()
 
     def matches(self, chunk: Chunk) -> bool:
         if chunk.doc_id not in self.relevant_docs:
@@ -51,8 +52,8 @@ class Question:
 @dataclass
 class QuestionResult:
     question: Question
-    retrieved: List[Chunk]
-    hit_rank: Optional[int]          # 1-based rank of the first match, else None
+    retrieved: list[Chunk]
+    hit_rank: int | None          # 1-based rank of the first match, else None
 
     @property
     def hit(self) -> bool:
@@ -73,7 +74,7 @@ class Report:
 
     label: str
     k: int
-    results: List[QuestionResult] = field(default_factory=list)
+    results: list[QuestionResult] = field(default_factory=list)
     chunk_count: int = 0
     embedder: str = ""
 
@@ -118,14 +119,14 @@ class Report:
         )
 
     @property
-    def misses(self) -> List[QuestionResult]:
+    def misses(self) -> list[QuestionResult]:
         return [r for r in self.results if not r.hit]
 
     def _mean(self, values) -> float:
         vals = list(values)
         return round(sum(vals) / len(vals), 4) if vals else 0.0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "label": self.label,
             "k": self.k,
@@ -140,13 +141,13 @@ class Report:
         }
 
 
-def load_goldset(path) -> List[Question]:
+def load_goldset(path) -> list[Question]:
     """Read goldset.json. Every field is checked; a typo in a document id is
     the single easiest way to get a confidently wrong score."""
     raw = json.loads(pathlib.Path(path).read_text(encoding="utf-8"))
     if not isinstance(raw, list):
         raise GoldsetError("goldset must be a JSON list of question objects")
-    questions: List[Question] = []
+    questions: list[Question] = []
     seen = set()
     for i, item in enumerate(raw):
         if not isinstance(item, dict):

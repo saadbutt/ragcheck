@@ -19,7 +19,8 @@ import json
 import math
 import re
 import urllib.request
-from typing import List, Protocol, Sequence
+from collections.abc import Sequence
+from typing import Protocol
 
 _TOKEN = re.compile(r"[a-z0-9]+")
 
@@ -30,15 +31,15 @@ class Embedder(Protocol):
     name: str
     dim: int
 
-    def embed(self, texts: Sequence[str]) -> List[List[float]]:
+    def embed(self, texts: Sequence[str]) -> list[list[float]]:
         ...
 
 
-def tokenise(text: str) -> List[str]:
+def tokenise(text: str) -> list[str]:
     return _TOKEN.findall(text.lower())
 
 
-def _ngrams(tokens: Sequence[str], n: int) -> List[str]:
+def _ngrams(tokens: Sequence[str], n: int) -> list[str]:
     if n == 1:
         return list(tokens)
     return [" ".join(tokens[i:i + n]) for i in range(max(0, len(tokens) - n + 1))]
@@ -65,8 +66,8 @@ class HashingEmbedder:
         digest = hashlib.sha1(term.encode("utf-8")).digest()
         return int.from_bytes(digest[:4], "big") % self.dim
 
-    def embed(self, texts: Sequence[str]) -> List[List[float]]:
-        out: List[List[float]] = []
+    def embed(self, texts: Sequence[str]) -> list[list[float]]:
+        out: list[list[float]] = []
         for text in texts:
             vec = [0.0] * self.dim
             tokens = tokenise(text)
@@ -101,13 +102,13 @@ class OpenAIEmbedder:
         self.batch = batch
         self.name = f"openai-{model}"
 
-    def embed(self, texts: Sequence[str]) -> List[List[float]]:
-        out: List[List[float]] = []
+    def embed(self, texts: Sequence[str]) -> list[list[float]]:
+        out: list[list[float]] = []
         for i in range(0, len(texts), self.batch):
             out.extend(self._call(list(texts[i:i + self.batch])))
         return out
 
-    def _call(self, batch: List[str]) -> List[List[float]]:
+    def _call(self, batch: list[str]) -> list[list[float]]:
         payload = json.dumps({"model": self.model, "input": batch}).encode("utf-8")
         request = urllib.request.Request(
             f"{self.base_url}/embeddings",
@@ -123,7 +124,7 @@ class OpenAIEmbedder:
         return [l2_normalise(r["embedding"]) for r in rows]
 
 
-def l2_normalise(vec: List[float]) -> List[float]:
+def l2_normalise(vec: list[float]) -> list[float]:
     norm = math.sqrt(sum(v * v for v in vec))
     if norm == 0.0:
         return list(vec)

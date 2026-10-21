@@ -14,8 +14,6 @@ from __future__ import annotations
 import argparse
 import json
 import pathlib
-import sys
-from typing import List, Optional
 
 from .chunk import STRATEGIES, chunk_corpus
 from .embed import HashingEmbedder, OpenAIEmbedder
@@ -35,7 +33,9 @@ def _embedder(args):
 def _load(args):
     corpus = pathlib.Path(args.corpus)
     docs = load_corpus(corpus)
-    goldset_path = pathlib.Path(args.goldset) if args.goldset else corpus / DEFAULT_GOLDSET
+    goldset_path = (
+        pathlib.Path(args.goldset) if args.goldset else corpus / DEFAULT_GOLDSET
+    )
     questions = load_goldset(goldset_path)
     check_goldset(questions, [d.id for d in docs])
     return docs, questions
@@ -85,7 +85,7 @@ def _eval(args) -> int:
     for result in report.results:
         rank = result.hit_rank if result.hit else "-"
         mark = "ok " if result.hit else "MISS"
-        print(f"{mark} {result.question.id:<5} rank {str(rank):<3} "
+        print(f"{mark} {result.question.id:<5} rank {rank!s:<3} "
               f"{result.question.text[:58]}")
     if report.misses:
         print("\nMissed questions retrieved these instead:")
@@ -106,7 +106,7 @@ def _query(args) -> int:
     return 0
 
 
-def main(argv: Optional[List[str]] = None) -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="ragcheck")
     sub = parser.add_subparsers(dest="cmd", required=True)
 

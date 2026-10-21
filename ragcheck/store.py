@@ -11,7 +11,7 @@ past evaluation and into production.
 
 from __future__ import annotations
 
-from typing import List, Sequence, Tuple
+from collections.abc import Sequence
 
 from .chunk import Chunk
 from .embed import Embedder, cosine
@@ -20,8 +20,8 @@ from .embed import Embedder, cosine
 class VectorStore:
     def __init__(self, embedder: Embedder) -> None:
         self.embedder = embedder
-        self.chunks: List[Chunk] = []
-        self.vectors: List[List[float]] = []
+        self.chunks: list[Chunk] = []
+        self.vectors: list[list[float]] = []
 
     def add(self, chunks: Sequence[Chunk]) -> None:
         if not chunks:
@@ -34,7 +34,7 @@ class VectorStore:
         self.chunks.extend(chunks)
         self.vectors.extend(vectors)
 
-    def search(self, query: str, k: int = 5) -> List[Tuple[Chunk, float]]:
+    def search(self, query: str, k: int = 5) -> list[tuple[Chunk, float]]:
         """Top k by cosine. Ties break on chunk id so results are reproducible
         rather than dependent on insertion order."""
         if k <= 0:

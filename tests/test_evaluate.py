@@ -14,9 +14,13 @@ import unittest
 
 from ragcheck.chunk import Chunk
 from ragcheck.evaluate import (
-    GoldsetError, Question, check_goldset, evaluate, load_goldset,
+    GoldsetError,
+    Question,
+    check_goldset,
+    evaluate,
+    load_goldset,
 )
-from tests.support import CORPUS, docs, questions
+from tests.support import docs, questions
 
 
 class _FakeStore:
@@ -104,8 +108,12 @@ class TestAnswerContains(unittest.TestCase):
     def test_right_document_wrong_span_does_not_count(self):
         """This is the difference between finding the file and finding the answer."""
         question = Question("q", "cost?", ("billing",), ("199 USD per month",))
-        wrong = _FakeStore({"cost?": [_chunk("billing", 0, "Invoices are due in 14 days.")]})
-        right = _FakeStore({"cost?": [_chunk("billing", 1, "Growth is 199 USD per month.")]})
+        wrong = _FakeStore(
+            {"cost?": [_chunk("billing", 0, "Invoices are due in 14 days.")]}
+        )
+        right = _FakeStore(
+            {"cost?": [_chunk("billing", 1, "Growth is 199 USD per month.")]}
+        )
         self.assertEqual(0.0, evaluate(wrong, [question], k=1).hit_rate)
         self.assertEqual(1.0, evaluate(right, [question], k=1).hit_rate)
 
@@ -122,9 +130,8 @@ class TestAnswerContains(unittest.TestCase):
 
 class TestGoldsetLoading(unittest.TestCase):
     def _write(self, payload):
-        tmp = tempfile.NamedTemporaryFile("w", suffix=".json", delete=False)
-        json.dump(payload, tmp)
-        tmp.close()
+        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as tmp:
+            json.dump(payload, tmp)
         return pathlib.Path(tmp.name)
 
     def test_the_example_goldset_loads(self):
