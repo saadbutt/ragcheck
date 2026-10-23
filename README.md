@@ -30,6 +30,45 @@ reading the output and nodding.
 
 Python 3.9 or newer. No required dependencies, including for the tests.
 
+## Tech stack
+
+- **Language:** Python 3.9–3.13, no required dependencies, not even for
+  the tests
+- **Embedders:** `HashingEmbedder` (offline, deterministic, the default)
+  and `OpenAIEmbedder` (real API, same metrics, behind the same interface)
+- **CI:** GitHub Actions — ruff, the full suite across all five supported
+  Python versions, and a job that gates the build on actual retrieval
+  quality
+
+## Measurable results
+
+- **84 tests**, zero dependencies, under 4 seconds — see [Tests](#tests)
+- **0 lint findings** — `ruff check .`
+- **Retrieval quality is CI-gated**, not just tested: `ragcheck.cli eval
+  --min-hit-rate 0.8` exits non-zero if the sentence strategy's hit rate
+  drops below 0.8 against the example corpus
+- The `compare` output above is this repo's own corpus, not a cherry-picked
+  example — run it yourself and it reproduces exactly
+
+## Architecture
+
+```mermaid
+flowchart LR
+    Docs["corpus/*.*\n(txt, md, html)"] --> Ingest["ingest.load_corpus\nnormalise text"]
+    Ingest --> Chunk["chunk.STRATEGIES[name]\nfixed / paragraph / sentence / heading"]
+    Chunk --> Embed["embed.Embedder\nHashing (offline) or OpenAI"]
+    Embed --> Store["store.VectorStore\ncosine search"]
+
+    Goldset["goldset.json\n(questions -> documents)"] --> Eval["evaluate.evaluate\nhit rate, MRR, P@k, ctx chars"]
+    Store --> Eval
+    Eval --> Report["cli compare / eval / query"]
+```
+
+Every chunk keeps the byte offsets it came from (`document.text[start:end]
+== chunk.text`, asserted for every strategy against every document), so a
+bad score always traces back to a real span of a real file rather than a
+chunking bug hiding behind the numbers.
+
 ## Run it
 
 ```
@@ -141,13 +180,13 @@ every debugging session after it is wasted.
 
 ## Tests
 
-77 tests, no dependencies, under a second.
+84 tests, no dependencies, under 4 seconds.
 
 | file | what it holds up |
 | --- | --- |
 | `test_ingest.py` | reading, normalising, and refusing what it cannot read |
 | `test_chunk.py` | the offsets invariant, determinism, per-strategy behaviour |
-| `test_embed_store.py` | reproducible vectors, cosine correctness, ties break on id |
+| `test_embed_store.py` | reproducible vectors, cosine correctness, ties break on id, `OpenAIEmbedder`'s wire format against a local fake server |
 | `test_evaluate.py` | metrics against hand-worked numbers, goldset validation |
 | `test_discriminates.py` | the harness actually separates good retrieval from bad |
 | `test_cli.py` | end to end through the command a reviewer would run |
@@ -171,4 +210,3 @@ quality can gate a build the same way tests do.
 ## License
 
 MIT.
-# ragcheck
