@@ -1,5 +1,7 @@
 # ragcheck
 
+[![CI](https://github.com/saadbutt/ragcheck/actions/workflows/ci.yml/badge.svg)](https://github.com/saadbutt/ragcheck/actions/workflows/ci.yml)
+
 Measure retrieval before you try to fix it.
 
 Most RAG work stops at "it returns something". The question nobody answers is
